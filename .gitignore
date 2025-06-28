@@ -1,0 +1,8 @@
+# Project exclude paths
+/eleme-business-service/target/
+/eleme-common/target/
+/eleme-eureka-server/target/
+/eleme-gateway/target/
+/eleme-order-service/target/
+/eleme-payment-service/target/
+/eleme-user-service/target/

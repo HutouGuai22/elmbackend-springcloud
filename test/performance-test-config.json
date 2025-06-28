@@ -1,0 +1,53 @@
+{
+  "testSuites": [
+    {
+      "name": "用户登录性能测试",
+      "endpoint": "/login",
+      "method": "POST",
+      "payload": {
+        "userName": "testuser",
+        "password": "123456"
+      },
+      "concurrency": 50,
+      "duration": "2m",
+      "expectedResponseTime": 500,
+      "expectedSuccessRate": 99
+    },
+    {
+      "name": "商家列表性能测试",
+      "endpoint": "/business",
+      "method": "GET",
+      "concurrency": 100,
+      "duration": "3m",
+      "expectedResponseTime": 300,
+      "expectedSuccessRate": 99.5
+    },
+    {
+      "name": "订单创建性能测试",
+      "endpoint": "/orders",
+      "method": "POST",
+      "payload": {
+        "userId": 1,
+        "businessId": 1,
+        "orderTotal": 50.0,
+        "daId": 1
+      },
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "concurrency": 30,
+      "duration": "2m",
+      "expectedResponseTime": 800,
+      "expectedSuccessRate": 98
+    }
+  ],
+  "monitoring": {
+    "metrics": ["response_time", "throughput", "error_rate", "cpu_usage", "memory_usage", "database_connections"],
+    "alerts": {
+      "response_time_threshold": 1000,
+      "error_rate_threshold": 5,
+      "cpu_usage_threshold": 80,
+      "memory_usage_threshold": 85
+    }
+  }
+}

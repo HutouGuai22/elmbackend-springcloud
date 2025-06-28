@@ -1,0 +1,70 @@
+# 测试环境Docker配置
+version: '3.8'
+
+services:
+  mysql-test:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: eleme_test
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./test-data:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis-test:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+
+  eureka-test:
+    build: ../eleme-eureka-server
+    ports:
+      - "8762:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+
+  gateway-test:
+    build: ../eleme-gateway
+    ports:
+      - "8081:8080"
+    depends_on:
+      - eureka-test
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-test:8761/eureka/
+
+  user-service-test:
+    build: ../eleme-user-service
+    depends_on:
+      - mysql-test
+      - eureka-test
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-test:3306/eleme_test
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-test:8761/eureka/
+
+  business-service-test:
+    build: ../eleme-business-service
+    depends_on:
+      - mysql-test
+      - eureka-test
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-test:3306/eleme_test
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-test:8761/eureka/
+
+  order-service-test:
+    build: ../eleme-order-service
+    depends_on:
+      - mysql-test
+      - eureka-test
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-test:3306/eleme_test
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-test:8761/eureka/
+
+networks:
+  default:
+    name: eleme-test-network

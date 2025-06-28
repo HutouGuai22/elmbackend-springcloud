@@ -1,0 +1,84 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: eleme-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://eleme-user-service
+          predicates:
+            - Path=/login,/register,/userInfo/**,/addressList/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: user-service-cb
+                fallbackUri: forward:/fallback/user
+        - id: business-service
+          uri: lb://eleme-business-service
+          predicates:
+            - Path=/business/**,/food/**,/cart/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: business-service-cb
+                fallbackUri: forward:/fallback/business
+        - id: order-service
+          uri: lb://eleme-order-service
+          predicates:
+            - Path=/orders/**,/order/**,/orderDetailet/**,/orderListNotPay/**,/orderListPay/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: order-service-cb
+                fallbackUri: forward:/fallback/order
+        - id: payment-service
+          uri: lb://eleme-payment-service
+          predicates:
+            - Path=/payment/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: payment-service-cb
+                fallbackUri: forward:/fallback/payment
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: false
+    hostname: localhost
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,gateway"
+  endpoint:
+    health:
+      show-details: when-authorized
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+      business-service-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+      order-service-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+      payment-service-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
